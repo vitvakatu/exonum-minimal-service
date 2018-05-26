@@ -1,8 +1,9 @@
 extern crate env_logger;
+#[macro_use]
 extern crate exonum;
 
 /// Useful imports.
-use exonum::blockchain::{Service, Transaction};
+use exonum::blockchain::{Service, Transaction, TransactionSet};
 use exonum::crypto::Hash;
 use exonum::encoding::Error;
 use exonum::helpers::fabric::{self, Context, NodeBuilder};
@@ -10,6 +11,7 @@ use exonum::messages::RawMessage;
 use exonum::storage::Snapshot;
 
 mod schema;
+mod transactions;
 
 /// Our not-so-featureful service.
 struct MinimalService;
@@ -30,9 +32,9 @@ impl Service for MinimalService {
         vec![]
     }
 
-    /// Function to convert transactions to our own type (TBD).
-    fn tx_from_raw(&self, _: RawMessage) -> Result<Box<Transaction>, Error> {
-        unimplemented!()
+    /// Function to convert transactions to our own type.
+    fn tx_from_raw(&self, raw: RawMessage) -> Result<Box<Transaction>, Error> {
+        transactions::MinimalTransactions::tx_from_raw(raw).map(Into::into)
     }
 }
 
