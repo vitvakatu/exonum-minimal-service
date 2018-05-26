@@ -9,6 +9,8 @@ use exonum::helpers::fabric::{self, Context, NodeBuilder};
 use exonum::messages::RawMessage;
 use exonum::storage::Snapshot;
 
+mod schema;
+
 /// Our not-so-featureful service.
 struct MinimalService;
 
