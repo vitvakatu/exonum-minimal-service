@@ -1,15 +1,24 @@
 extern crate env_logger;
 #[macro_use]
 extern crate exonum;
+extern crate bodyparser;
+extern crate iron;
+extern crate router;
+extern crate serde_json;
 
 /// Useful imports.
-use exonum::blockchain::{Service, Transaction, TransactionSet};
+use exonum::api::Api;
+use exonum::blockchain::{ApiContext, Service, Transaction, TransactionSet};
 use exonum::crypto::Hash;
 use exonum::encoding::Error;
 use exonum::helpers::fabric::{self, Context, NodeBuilder};
 use exonum::messages::RawMessage;
 use exonum::storage::Snapshot;
 
+use iron::Handler;
+use router::Router;
+
+mod api;
 mod schema;
 mod transactions;
 
@@ -35,6 +44,15 @@ impl Service for MinimalService {
     /// Function to convert transactions to our own type.
     fn tx_from_raw(&self, raw: RawMessage) -> Result<Box<Transaction>, Error> {
         transactions::MinimalTransactions::tx_from_raw(raw).map(Into::into)
+    }
+
+    fn public_api_handler(&self, context: &ApiContext) -> Option<Box<Handler>> {
+        let mut router = Router::new();
+        let blockchain = context.blockchain().clone();
+        let channel = context.node_channel().clone();
+        let api = api::MinimalApi::new(blockchain, channel);
+        api.wire(&mut router);
+        Some(Box::new(router))
     }
 }
 
